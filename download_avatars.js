@@ -1,6 +1,7 @@
 const request = require("request");
 const authToken = require("./secrets");
 const fs = require("fs");
+
 function getRepoContributors(repoOwner, repoName, cb) {
   var options = {
     url:
@@ -18,6 +19,7 @@ function getRepoContributors(repoOwner, repoName, cb) {
     cb(err, JSON.parse(body));
   });
 }
+
 function downloadImageByURL(url, filePath) {
   let options = {
     url: url,
