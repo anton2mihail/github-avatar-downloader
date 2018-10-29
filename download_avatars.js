@@ -22,9 +22,22 @@ function getRepoContributors(repoOwner, repoName, cb) {
   });
 }
 
-getRepoContributors("jquery", "jquery", function(err, result) {
+getRepoContributors("jquery", "jquery", (err, result) => {
   console.log("Errors:", err);
   for (let el of result) {
-    console.log(el["avatar_url"]);
+    downloadImageByURL(el["avatar_url"], "avatars/" + el["login"] + ".jpg");
   }
 });
+const fs = require("fs");
+function downloadImageByURL(url, filePath) {
+  let options = {
+    url: url,
+    headers: {
+      "User-Agent": "request",
+      Authorization: authToken.GITHUB_TOKEN
+    }
+  };
+  request(options, (err, res) => {
+    if (err) throw err;
+  }).pipe(fs.createWriteStream(filePath));
+}
