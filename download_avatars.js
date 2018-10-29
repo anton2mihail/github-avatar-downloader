@@ -28,7 +28,6 @@ function getRepoContributors({ repoOwner, repoName, token }, cb) {
   };
   //Create new get request at the specified url endpoint with the written options
   request(options, function(err, res, body) {
-    console.log(body);
     cb(err, JSON.parse(body));
   });
 }
