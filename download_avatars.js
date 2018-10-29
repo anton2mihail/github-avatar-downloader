@@ -28,6 +28,7 @@ function getRepoContributors({ repoOwner, repoName, token }, cb) {
   };
   //Create new get request at the specified url endpoint with the written options
   request(options, function(err, res, body) {
+    console.log(body);
     cb(err, JSON.parse(body));
   });
 }
@@ -40,14 +41,16 @@ function downloadImageByURL(url, filePath, token) {
       Authorization: token
     }
   };
+  try {
+    fs.mkdirSync("./avatars");
+  } catch (err) {
+    if (err.code !== "EEXIST") throw err;
+  }
   //Make a get request at specified endpoint, downloads each image specifed in previous response
   request(options, (err, res) => {
     if (err) throw err;
     //Attempt to make directory
-    fs.mkdir("./avatars", error => {
-      fs.createWriteStream(filePath);
-    });
-  });
+  }).pipe(fs.createWriteStream(filePath));
 }
 
 //Function to be executed on program start
