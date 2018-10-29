@@ -15,19 +15,21 @@ const tokenAuth = function(token) {
 function printResults() {
   const ent = Object.entries(mentionedRepos)
     .sort((a, b) => {
-      if (a[1] < b[1]) {
+      if (a[1] > b[1]) {
         return -1;
       }
-      if (a[1] > b[1]) {
+      if (a[1] < b[1]) {
         return 1;
       }
       // a must be equal to b
       return 0;
     })
     .filter((el, idx) => {
-      return idx < 14;
+      return idx < 5;
     });
-  console.log(ent);
+  for (let e of ent) {
+    console.log(`[${e[1]} stars] / ${e[0]}`);
+  }
 }
 
 function getRepoContributors({ repoOwner, repoName, token }, cb) {
