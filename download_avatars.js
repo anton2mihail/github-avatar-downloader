@@ -1,5 +1,6 @@
 const request = require("request");
-const authToken = require("./secrets");
+require("dotenv").config();
+const token = process.env.GITHUB_TOKEN;
 const fs = require("fs");
 
 function getRepoContributors(repoOwner, repoName, cb) {
@@ -12,7 +13,7 @@ function getRepoContributors(repoOwner, repoName, cb) {
       "/contributors",
     headers: {
       "User-Agent": "request",
-      Authorization: authToken.GITHUB_TOKEN
+      Authorization: token
     }
   };
   //Create new get request at the specified url endpoint with the written options
@@ -26,7 +27,7 @@ function downloadImageByURL(url, filePath) {
     url: url,
     headers: {
       "User-Agent": "request",
-      Authorization: authToken.GITHUB_TOKEN
+      Authorization: token
     }
   };
   //Make a get request at specified endpoint, downloads each image specifed in previous response
