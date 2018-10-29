@@ -28,7 +28,7 @@ function printResults() {
       return idx < 5;
     });
   for (let e of ent) {
-    console.log(`[${e[1]} stars] / ${e[0]}`);
+    console.log(`[${e[1]} stars] ${e[0]}`);
   }
 }
 
