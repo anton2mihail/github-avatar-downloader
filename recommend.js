@@ -1,6 +1,8 @@
-const request = require("request");
+const request = require("request-promise");
 require("dotenv").config();
 const fs = require("fs");
+let mentionedRepos = {};
+let starredReposList = [];
 const tokenAuth = function(token) {
   if (!token) {
     throw "No env variable with the name GITHUB_TOKEN was specified";
@@ -9,6 +11,24 @@ const tokenAuth = function(token) {
     throw "Invalid github token provided";
   }
 };
+
+function printResults() {
+  const ent = Object.entries(mentionedRepos)
+    .sort((a, b) => {
+      if (a[1] < b[1]) {
+        return -1;
+      }
+      if (a[1] > b[1]) {
+        return 1;
+      }
+      // a must be equal to b
+      return 0;
+    })
+    .filter((el, idx) => {
+      return idx < 14;
+    });
+  console.log(ent);
+}
 
 function getRepoContributors({ repoOwner, repoName, token }, cb) {
   var options = {
@@ -20,56 +40,69 @@ function getRepoContributors({ repoOwner, repoName, token }, cb) {
       "/contributors",
     headers: {
       "User-Agent": "request",
-      Authorization: token
+      Authorization: "token " + token
     }
   };
   //Create new get request at the specified url endpoint with the written options
   request(options, function(err, res, body) {
-    console.log(res.statusCode);
+    console.log(35, res.statusCode);
     cb(err, JSON.parse(body), token);
   });
 }
 
+function getTally(repoList) {
+  let tally = repoList.reduce((tally, el) => {
+    tally[el] = (tally[el] || 0) + 1;
+    return tally;
+  }, mentionedRepos);
+}
+
 function getStarredUrls(list, token) {
-  let starredReposList = [];
+  let promiseTally = [];
   if (list) {
     for (let el of list) {
       let options = {
         url: "https://api.github.com/users/" + el + "/starred",
         headers: {
           "User-Agent": "request",
-          Authorization: token
+          Authorization: "token " + token
         }
       };
-      request(options, (err, res, body) => {
-        if (err) throw err;
-        console.log(res.statusCode);
-        let starredRepos = JSON.parse(body);
+      let promise = request(options);
+      promiseTally.push(promise);
+      // .on("end", );
+    }
+    return Promise.all(promiseTally).then(results => {
+      for (let el of results) {
+        let starredRepos = JSON.parse(el);
         for (let repo of starredRepos) {
           starredReposList.push(repo["full_name"]);
         }
-      }).on("end", () => {
-        console.log(starredReposList);
-      });
-    }
+      }
+    });
+    //return true;
   }
 }
 
-function starredReposByUser(err, response) {
+function starredReposByUser(err, response, token) {
   if (err) throw err;
   let starredUrls = [];
   for (let res of response) {
     starredUrls.push(res["login"]);
   }
-  getStarredUrls(starredUrls);
+  getStarredUrls(starredUrls, token).then(() => {
+    getTally(starredReposList);
+    printResults();
+  });
 }
 
 (function() {
   console.log("Welcome to repository recommendations!");
   let args = process.argv.slice(2);
-  tokenAuth(process.env.GITHUB_TOKEN);
+  const token = process.env.GITHUB_TOKEN;
+  tokenAuth(token);
   getRepoContributors(
-    { repoOwner: args[0], repoName: args[1], token: process.env.GITHUB_TOKEN },
+    { repoOwner: args[0], repoName: args[1], token },
     starredReposByUser
   );
 })();

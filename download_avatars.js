@@ -8,7 +8,7 @@ function tokenAuth(token) {
   if (!token) {
     throw "No env variable with the name GITHUB_TOKEN was specified";
   }
-  if (/[^a-f0-9]{40}/gi.test(token)) {
+  if (!/[a-f0-9]{40}/gi.test(token)) {
     throw "Invalid github token provided";
   }
 }
@@ -23,7 +23,7 @@ function getRepoContributors({ repoOwner, repoName, token }, cb) {
       "/contributors",
     headers: {
       "User-Agent": "request",
-      Authorization: token
+      Authorization: "token " + token
     }
   };
   //Create new get request at the specified url endpoint with the written options
@@ -37,7 +37,7 @@ function downloadImageByURL(url, filePath, token) {
     url: url,
     headers: {
       "User-Agent": "request",
-      Authorization: token
+      Authorization: "token " + token
     }
   };
   try {
